@@ -1,4 +1,6 @@
-package com.example.demo;
+package com.example.demo.voucher;
+
+import com.example.demo.voucher.Voucher;
 
 import java.util.UUID;
 

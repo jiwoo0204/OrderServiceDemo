@@ -1,11 +1,13 @@
-package com.example.demo;
+package com.example.demo.order;
+
+import com.example.demo.voucher.Voucher;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public class Order {
-    private final UUID orderid;
+    private final UUID orderId;
     private final UUID customerId;
     private final List<OrderItem> orderItems;
     private Optional<Voucher> voucher;
@@ -13,14 +15,14 @@ public class Order {
 
     // voucher가 없는 생성자
     public Order(UUID orderid, UUID customerId, List<OrderItem> orderItems) {
-        this.orderid = orderid;
+        this.orderId = orderid;
         this.customerId = customerId;
         this.orderItems = orderItems;
         this.voucher = Optional.empty();
     }
 
     public Order(UUID orderid, UUID customerId, List<OrderItem> orderItems, Voucher voucher) {
-        this.orderid = orderid;
+        this.orderId = orderid;
         this.customerId = customerId;
         this.orderItems = orderItems;
         this.voucher = Optional.of(voucher);
@@ -35,5 +37,9 @@ public class Order {
 
     public void setOrderStatus(OrderStatus orderStatus) {
         this.orderStatus = orderStatus;
+    }
+
+    public UUID getOrderId() {
+        return orderId;
     }
 }
