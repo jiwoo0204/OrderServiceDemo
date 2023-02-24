@@ -3,6 +3,7 @@ package com.example.demo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.ByteBuffer;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -61,6 +62,28 @@ public class JdbcCustomerRepository {
         return names;
     }
 
+    public List<UUID> findAllIds() {
+        List<UUID> uuids = new ArrayList<>();
+        try (
+                var connection = DriverManager.getConnection("jdbc:mysql://localhost/order_mgmt", "root", "lkj3591300!");
+                var statement = connection.prepareStatement(SELECT_ALL_SQL);
+                var resultSet = statement.executeQuery()
+        ) {
+            while (resultSet.next()) {
+                var customerName = resultSet.getString("name");
+
+                var customerId = toUUID(resultSet.getBytes("customer_id"));
+                var createdAt = resultSet.getTimestamp("created_at").toLocalDateTime();
+//                logger.info("customer id -> {}, name -> {}, createdAt -> {}", customerId, customerName, createdAt);
+                uuids.add(customerId);
+            }
+        } catch (SQLException throwable) {
+            logger.error("Got error while closing connection", throwable);
+        }
+
+        return uuids;
+    }
+
     public int insertCustomer(UUID customerId, String name, String email) {
 
         try (
@@ -104,18 +127,29 @@ public class JdbcCustomerRepository {
         return 0;
     }
 
+    static UUID toUUID(byte[] bytes) {
+        var byteBuffer = ByteBuffer.wrap(bytes);
+        return new UUID(byteBuffer.getLong(), byteBuffer.getLong());
+    }
     public static void main(String[] args) {
         var customerRepository = new JdbcCustomerRepository();
 
         int count = customerRepository.deleteAllCustomer();
         logger.info("deleted count -> {}", count);
-        customerRepository.insertCustomer(UUID.randomUUID(), "new-user", "new-user@gmail.com");
-        var customer2 = UUID.randomUUID();
-        customerRepository.insertCustomer(customer2, "new-user2", "new-user2@gmail.com");
-        customerRepository.findAllName().forEach(v -> logger.info("Found name : {}", v));
 
-        customerRepository.updateCustomerName(customer2, "updated-user2");
-        customerRepository.findAllName().forEach(v -> logger.info("Found name : {}", v));
+        var customerId = UUID.randomUUID();
+        logger.info("created customerId -> {}", customerId);
+        customerRepository.insertCustomer(customerId, "new-user", "new-user@gmail.com");
+
+        customerRepository.findAllIds().forEach(v -> logger.info("Found name : {}", v));
+
+//        customerRepository.insertCustomer(UUID.randomUUID(), "new-user", "new-user@gmail.com");
+//        var customer2 = UUID.randomUUID();
+//        customerRepository.insertCustomer(customer2, "new-user2", "new-user2@gmail.com");
+//        customerRepository.findAllName().forEach(v -> logger.info("Found name : {}", v));
+//
+//        customerRepository.updateCustomerName(customer2, "updated-user2");
+//        customerRepository.findAllName().forEach(v -> logger.info("Found name : {}", v));
 
 //        var names = customerRepository.findNames("tester01");
     }
